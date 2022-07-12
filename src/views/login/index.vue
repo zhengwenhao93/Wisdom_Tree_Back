@@ -28,14 +28,14 @@
               v-model.tirm="loginform.code"
               placeholder="请输入验证码"
             ></el-input>
-            <el-image :src="codeImageUrl" @click="codeSelect" />
+            <el-image :src="codeImageUrl" @click.stop="codeSelect" />
           </div>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleverifyForm"
-            >立即登录</el-button
-          >
+          <el-button :loading="lodingState" type="primary" @click="handleverifyForm">{{
+            lodingState ? '登录中...' : '立即登录'
+          }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -47,14 +47,15 @@
 <script>
 import UserApi from '@/api/user'
 import { mapActions } from 'vuex'
+
 export default {
   data () {
     return {
       codeImageUrl: '',
-
+      lodingState: false,
       loginform: {
-        username: 'duck',
-        password: 'admin888',
+        username: '',
+        password: '',
         code: '',
         token: ''
       },
@@ -78,7 +79,9 @@ export default {
       })
     },
 
+    // 点击更换验证码
     codeSelect () {
+      this.loginform.code = ''
       this.handleGetCaptcha()
     },
 
@@ -91,8 +94,21 @@ export default {
 
     // 登录提交的
     async handleLoginSubmit () {
-      this.login(this.loginform)
-      this.$router.push('/')
+      try {
+        const token = await this.login(this.loginform)
+        if (!token) return
+        this.$notify({
+          title: '提示',
+          message: '登录成功',
+          type: 'success'
+        })
+        this.lodingState = true
+        await this.$router.push('/')
+      } catch (e) {
+        console.log(e);
+      } finally {
+        this.lodingState = false
+      }
     },
     ...mapActions({
       login: 'user/login'

@@ -1,5 +1,8 @@
 import UserApi from '../../api/user'
-import { getItem } from '../../utils/storage'
+import {
+  setItem,
+  getItem
+} from '../../utils/storage'
 export default {
   namespaced: true,
   state: {
@@ -8,6 +11,7 @@ export default {
   mutations: {
     setToken (state, token) {
       state.token = token
+      setItem('token', token)
     }
   },
   actions: {
